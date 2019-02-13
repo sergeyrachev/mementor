@@ -71,7 +71,7 @@ public:
         , f(AV_PIX_FMT_GRAY8)
         , sc{sws_getContext(width, height, format,
                             w, h, f,
-                            SWS_BILINEAR, NULL, NULL, NULL), sws_freeContext} {
+                            SWS_BICUBIC, NULL, NULL, NULL), sws_freeContext} {
     }
 
     dlib::array2d<uint8_t> resample(frame_ptr frame) {
