@@ -22,5 +22,6 @@ public:
 
 private:
     dmx_ctx_ptr dmx_ctx;
+    std::chrono::microseconds start_time;
 };
 
