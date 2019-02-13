@@ -13,8 +13,6 @@ extern "C"{
 }
 
 decoder::decoder(const AVCodecParameters &codecpar) {
-    av_register_all();
-
     dec_ctx_deleter_t dec_ctx_deleter = [](AVCodecContext *p) {
         avcodec_free_context(&p);
     };
