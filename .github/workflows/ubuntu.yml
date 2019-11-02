@@ -9,11 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: prebuild
-      run: mkdir ./build
     - name: generate
-      run: cmake ..
-      working-directory: build
+      run: cmake .
     - name: build
       run: cmake --build .
     - name: test
