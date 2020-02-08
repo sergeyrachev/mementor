@@ -2,6 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "interruption.h"
 
+using namespace threads;
+
 bool interruption_t::done() {
     std::lock_guard<std::mutex> lck(guard);
     return has_signaled;
@@ -21,12 +23,4 @@ void interruption_t::interrupt() {
     // http://en.cppreference.com/w/cpp/thread/condition_variable/notify_one
     lck.unlock();
     condition.notify_all();
-
-    // FIXME: I fell it is dangerous to have callback call in interrupt. What if multiple interruption happen
-    handler();
-}
-
-void interruption_t::notify(const std::function<void()> & f) {
-    std::unique_lock<std::mutex> lck(guard);
-    handler = f;
 }

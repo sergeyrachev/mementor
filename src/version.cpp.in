@@ -1,4 +1,4 @@
 #include "version.h"
 
-const std::string version = "@project_version_revision@";
+const std::string version = "@version_revision@";
 

@@ -10,22 +10,21 @@
 #include <map>
 #include <list>
 
-namespace neuon{
-    typedef std::function<void(frame_ptr)> consumer;
+typedef std::function<void(frame_ptr)> consumer;
 
-    class source_t {
-    public:
-        explicit source_t(const std::string& input, consumer video, consumer audio);
-        void run();
-        ~source_t();
-        std::unique_ptr<demuxer> dmx;
-        std::shared_ptr<decoder> adec;
-        std::shared_ptr<decoder> vdec;
+class source_t {
+public:
+    explicit source_t(const std::string& input, consumer video, consumer audio);
+    void run(threads::interruption_t& interruption);
+    ~source_t();
+    std::unique_ptr<ffmpeg::demuxer> dmx;
+    std::shared_ptr<ffmpeg::decoder> adec;
+    std::shared_ptr<ffmpeg::decoder> vdec;
 
-    private:
-        void setup(demuxer& dmx, const consumer &video, const consumer &audio);
-    private:
-        std::map<int32_t, std::shared_ptr<decoder>> decoders;
-        std::map<int32_t, consumer> consumers;
-    };
-}
+private:
+    void setup(ffmpeg::demuxer& dmx, const consumer &video, const consumer &audio);
+private:
+    std::map<int32_t, std::shared_ptr<ffmpeg::decoder>> decoders;
+    std::map<int32_t, consumer> consumers;
+};
+

@@ -12,11 +12,9 @@ extern "C"
 #include <libavcodec/avcodec.h>
 }
 
-#include "dlib/image_processing.h"
-
 inline std::string averr(int ret){
-    std::string str(100, '\0');
-    auto p = av_strerror(ret, str.data(), 100);
+    char str[100]={0};
+    auto p = av_strerror(ret, str, 100);
     return str;
 }
 
@@ -34,7 +32,7 @@ public:
         swr_init(sc.get());
     }
 
-    std::pair<std::vector<double>, std::chrono::microseconds> resample(frame_ptr input_frame) {
+    std::pair<frame_ptr, std::chrono::microseconds> resample(frame_ptr input_frame) {
 
         frame_ptr resampled_frame{av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }};
         av_frame_copy_props(resampled_frame.get(), input_frame.get());
@@ -43,17 +41,12 @@ public:
         resampled_frame->channel_layout = l;
         resampled_frame->format = f;
 
-        int64_t input_pts = input_frame->pts * (sr * input_frame->sample_rate) / 1'000'000;
-        std::chrono::microseconds next_pts{  swr_next_pts(sc.get(), input_pts) * 1'000'000 / (sr * input_frame->sample_rate) };
+        int64_t input_pts = input_frame->pts * (sr * input_frame->sample_rate) / 1000000;
+        std::chrono::microseconds next_pts{  swr_next_pts(sc.get(), input_pts) * 1000000 / (sr * input_frame->sample_rate) };
 
         int ret = swr_convert_frame(sc.get(), resampled_frame.get(), input_frame.get());
 
-        std::vector<double> frame(resampled_frame->nb_samples, 0);
-        for (int i = 0; i < frame.size(); ++i) {
-            frame[i] = *reinterpret_cast<double*>(&resampled_frame->data[0][i * av_get_bytes_per_sample(f)]);
-        }
-
-        return {frame, next_pts};
+        return {resampled_frame, next_pts};
     }
 
 private:
@@ -74,7 +67,7 @@ public:
                             SWS_BICUBIC, NULL, NULL, NULL), sws_freeContext} {
     }
 
-    dlib::array2d<uint8_t> resample(frame_ptr frame) {
+    std::pair<frame_ptr, std::chrono::microseconds> resample(frame_ptr frame) {
 
         frame_ptr out({av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }});
 
@@ -87,14 +80,7 @@ public:
 
         int height = sws_scale(sc.get(), (const uint8_t *const *) frame->data, frame->linesize, 0, frame->height, out->data, out->linesize);
 
-        dlib::array2d<uint8_t> picture(h, w);
-        for (int i = 0; i < h; ++i) {
-            for (int j = 0; j < w; ++j) {
-                picture[i][j] = out->data[0][i * out->linesize[0] + j];
-            }
-        }
-
-        return picture;
+        return {out, std::chrono::microseconds{out->pts}};
     }
 
 private:

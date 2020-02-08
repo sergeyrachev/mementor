@@ -3,6 +3,7 @@
 #include "decoder.h"
 
 #include "logging.h"
+#include "logging_boost.h"
 
 #include <cassert>
 #include <chrono>
@@ -11,6 +12,8 @@ extern "C"{
 #include <libavutil/avutil.h>
 #include <libavformat/avformat.h>
 }
+
+using namespace ffmpeg;
 
 decoder::decoder(const AVCodecParameters &codecpar) {
     dec_ctx_deleter_t dec_ctx_deleter = [](AVCodecContext *p) {
@@ -22,13 +25,13 @@ decoder::decoder(const AVCodecParameters &codecpar) {
     dec_ctx->flags |= AV_CODEC_FLAG_OUTPUT_CORRUPT;
     dec_ctx->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 
-    logging::info() << "Set param to decoder with return code " << err;
+    logging::debug() << "Set param to decoder with return code " << err;
 
     AVDictionary *opts = NULL;
     dec_ctx->thread_count = 0;
     dec_ctx->thread_type = FF_THREAD_FRAME;
     err = avcodec_open2(dec_ctx.get(), i_codec, &opts);
-    logging::info() << "Opened decoder " << std::hex << dec_ctx.get()
+    logging::debug() << "Opened decoder " << std::hex << dec_ctx.get()
                     << " returned " << err;
     assert(err == 0);
 }
@@ -36,17 +39,17 @@ decoder::decoder(const AVCodecParameters &codecpar) {
 void decoder::put(const AVPacket* const packet) const {
 
     int err = avcodec_send_packet(dec_ctx.get(), packet);
-    logging::info() << "Put packet'" << std::hex << packet << "' returned " << err;
+    logging::debug() << "Put packet'" << std::hex << packet << "' returned " << err;
 }
 
 frame_ptr decoder::get() const {
     frame_ptr frame({av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }});
     int res = avcodec_receive_frame(dec_ctx.get(), frame.get());
     if (AVERROR(EAGAIN) == res) {
-        logging::info() << "Decoder expect more data";
+        logging::debug() << "Decoder expect more data";
         return {};
     } else if (AVERROR_EOF == res) {
-        logging::info() << "Decoder reached EOF";
+        logging::debug() << "Decoder reached EOF";
         return {};
     } else if (AVERROR(EINVAL) == res) {
         logging::debug() << "Decoder returned an error: " << errno;
@@ -54,7 +57,7 @@ frame_ptr decoder::get() const {
         return {};
     }
 
-    logging::info() << "Get frame "
+    logging::debug() << "Get frame "
                     << " Dts: " << frame->pkt_dts
                     << " Dts(msec): " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(frame->pkt_dts)).count()
                     << " Pts: " << frame->pts

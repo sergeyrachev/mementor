@@ -1,17 +1,32 @@
 #pragma once
 
-#include "ostream"
-
 #include <cstdint>
 #include <string>
 #include <sstream>
+#include <memory>
 
 namespace logging{
+    enum class verbosity_t{
+        error,
+        info,
+        debug
+    };
+
+    class sink_t{
+    public:
+        virtual ~sink_t() = default;
+        virtual void put(verbosity_t verbosity, const std::string& message){};
+    };
+
     namespace impl{
-        class accumulator{
+        template<typename S = sink_t>
+        class accumulator_tt{
         protected:
-            accumulator() = default;
-            virtual ~accumulator() = default;
+            accumulator_tt() = default;
+            explicit accumulator_tt(verbosity_t level):level(level){};
+            virtual ~accumulator_tt(){
+                sink()->put(level, get());
+            }
 
         public:
             template<class V>
@@ -19,10 +34,19 @@ namespace logging{
                 _stream << v;
             }
 
+            static std::shared_ptr<S>& sink() {
+                static std::shared_ptr<S> impl = std::make_shared<S>();
+                return impl;
+            }
+
         protected:
             std::string get() const {
                 return std::move(_stream.str());
             }
+
+        protected:
+            verbosity_t level{verbosity_t::error};
+
         private:
             mutable std::ostringstream _stream;
         };
@@ -34,33 +58,36 @@ namespace logging{
         };
     }
 
-    class debug : public impl::accumulator{
+    template<typename S>
+    class error_tt : public impl::accumulator_tt<S>{
     public:
-        debug() = default;
-        ~debug();
+        error_tt():impl::accumulator_tt<S>(verbosity_t::error){}
     };
-    template<class V>
-    const debug& operator<<(const debug &i, const V& v){
+
+    template<typename V, typename S>
+    const error_tt<S>& operator<<(const error_tt<S> &i, const V& v){
         return impl::put(i, v);
     }
 
-    class error : public impl::accumulator{
+    template<typename S>
+    class info_tt : public impl::accumulator_tt<S>{
     public:
-        error() = default;
-        ~error();
+        info_tt():impl::accumulator_tt<S>(verbosity_t::info){}
     };
-    template<class V>
-    const error& operator<<(const error &i, const V& v){
+
+    template<typename V, typename S>
+    const info_tt<S>& operator<<(const info_tt<S> &i, const V& v){
         return impl::put(i, v);
     }
 
-    class info : public impl::accumulator{
+    template<typename S>
+    class debug_tt : public impl::accumulator_tt<S>{
     public:
-        info() = default;
-        ~info();
+        debug_tt():impl::accumulator_tt<S>(verbosity_t::debug){}
     };
-    template<class V>
-    const info& operator<<(const info &i, const V& v){
+
+    template<typename V, typename S>
+    const debug_tt<S>& operator<<(const debug_tt<S> &i, const V& v){
         return impl::put(i, v);
     }
 }
