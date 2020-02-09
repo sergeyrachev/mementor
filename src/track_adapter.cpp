@@ -3,7 +3,7 @@
 #include "track_adapter.h"
 
 
-track_adapter::track_adapter(const AVStream &stream)
+ffmpeg::track_adapter::track_adapter(const AVStream &stream)
     : _parameters(avcodec_parameters_alloc(), [](AVCodecParameters* p){ avcodec_parameters_free(&p);})
     , index(static_cast<size_t>(stream.index))
     , parameters(*_parameters)

@@ -23,7 +23,7 @@ ffmpeg::demuxer::demuxer(const std::string &filename) {
     start_time = std::chrono::microseconds(av_rescale_q(dmx_ctx->start_time, {1, AV_TIME_BASE}, access_unit_adapter::Microseconds));
 }
 
-std::vector<track_adapter> ffmpeg::demuxer::tracks() const {
+std::vector<ffmpeg::track_adapter> ffmpeg::demuxer::tracks() const {
     std::vector<track_adapter> ret;
     std::transform(dmx_ctx->streams, dmx_ctx->streams + dmx_ctx->nb_streams,
                    std::back_inserter(ret),
