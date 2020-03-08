@@ -13,6 +13,7 @@ message(STATUS "Build ${PROJECT_NAME}-${version_revision} at ${birthday} on ${CM
 find_package(FFMPEG MODULE)
 find_package(Boost 1.70 MODULE COMPONENTS program_options log log_setup)
 find_package(CURL)
+find_package(spdlog)
 find_package(GTest 1.8 CONFIG REQUIRED COMPONENTS gtest gmock)
 include(GoogleTest)
 
@@ -71,7 +72,6 @@ if(Boost_FOUND)
     gtest_discover_tests(ut_options)
 endif()
 
-find_package(spdlog)
 if(NOT ${CMAKE_HOST_WIN32} AND Boost_FOUND AND spdlog_FOUND)
     add_library(external_tool OBJECT src/external_tool.cpp)
     target_link_libraries(external_tool PUBLIC Boost::filesystem spdlog::spdlog)
@@ -92,13 +92,11 @@ if(Boost_FOUND AND FFMPEG_FOUND)
         src/decoder.cpp
         src/interruption.cpp
         src/options.cpp
-        src/logging.cpp
-        src/logging_boost.cpp
         src/access_unit_adapter.cpp
         src/track_adapter.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
         ${CMAKE_CURRENT_BINARY_DIR}/birthday.cpp
         )
     target_include_directories(sb_splitter PRIVATE src/)
-    target_link_libraries(sb_splitter PRIVATE Boost::program_options Boost::dynamic_linking Boost::log FFMPEG::avutil FFMPEG::avformat FFMPEG::avcodec)
+    target_link_libraries(sb_splitter PRIVATE spdlog::spdlog Boost::program_options Boost::dynamic_linking Boost::log FFMPEG::avutil FFMPEG::avformat FFMPEG::avcodec)
 endif()

@@ -2,8 +2,8 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 #include "decoder.h"
 
-#include "logging.h"
-#include "logging_boost.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/fmt/bin_to_hex.h"
 
 #include <cassert>
 #include <chrono>
@@ -25,45 +25,46 @@ decoder::decoder(const AVCodecParameters &codecpar) {
     dec_ctx->flags |= AV_CODEC_FLAG_OUTPUT_CORRUPT;
     dec_ctx->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 
-    logging::debug() << "Set param to decoder with return code " << err;
+    SPDLOG_DEBUG("Set param to decoder with return code {}", err);
 
     AVDictionary *opts = NULL;
     dec_ctx->thread_count = 0;
     dec_ctx->thread_type = FF_THREAD_FRAME;
     err = avcodec_open2(dec_ctx.get(), i_codec, &opts);
-    logging::debug() << "Opened decoder " << std::hex << dec_ctx.get()
-                    << " returned " << err;
+
+    SPDLOG_DEBUG("Opened decoder {:p} returned {}", static_cast<void*>(dec_ctx.get()), err);
+
     assert(err == 0);
 }
 
 void decoder::put(const AVPacket* const packet) const {
 
     int err = avcodec_send_packet(dec_ctx.get(), packet);
-    logging::debug() << "Put packet'" << std::hex << packet << "' returned " << err;
+    SPDLOG_DEBUG("Put packet {}, returned {}", packet, err);
 }
 
 frame_ptr decoder::get() const {
     frame_ptr frame({av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }});
     int res = avcodec_receive_frame(dec_ctx.get(), frame.get());
     if (AVERROR(EAGAIN) == res) {
-        logging::debug() << "Decoder expect more data";
+        SPDLOG_DEBUG("Decoder expect more data");
         return {};
     } else if (AVERROR_EOF == res) {
-        logging::debug() << "Decoder reached EOF";
+        SPDLOG_DEBUG("Decoder reached EOF");
         return {};
     } else if (AVERROR(EINVAL) == res) {
-        logging::debug() << "Decoder returned an error: " << errno;
+        SPDLOG_DEBUG("Decoder returned an error: ", errno);
         assert((0, "It is very unlikely to be here!"));
         return {};
     }
-
-    logging::debug() << "Get frame "
-                    << " Dts: " << frame->pkt_dts
-                    << " Dts(msec): " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(frame->pkt_dts)).count()
-                    << " Pts: " << frame->pts
-                    << " PktPts(msec): " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(frame->pts)).count()
-                    << " Size: " << frame->pkt_size
-                    << " Pos: " << frame->pkt_pos;
+    SPDLOG_DEBUG("Get frame : Dts: {} Dts(msec): {} Pts: {} PktPts(msec): {} Size: {} Pos: {}",
+        frame->pkt_dts,
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(frame->pkt_dts)).count(),
+        frame->pts,
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::microseconds(frame->pts)).count(),
+        frame->pkt_size,
+        frame->pkt_pos
+        );
 
     return frame;
 }
