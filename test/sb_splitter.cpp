@@ -36,10 +36,10 @@ int main(int argc, char *argv[]) {
 
     auto src = std::unique_ptr<source_t> {new source_t(
         media_filename,
-        [](frame_ptr au) {
+        [](ffmpeg::frame_ptr au) {
             logging::info() << "Video: " << au->pts;
         },
-        [](frame_ptr au) {
+        [](ffmpeg::frame_ptr au) {
             logging::info() << "Audio: " << au->pts;
         })};
 

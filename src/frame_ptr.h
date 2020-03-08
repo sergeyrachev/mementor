@@ -3,10 +3,9 @@
 #include <functional>
 #include <memory>
 
-extern "C"{
-#include <libavutil/frame.h>
+struct AVFrame;
+
+namespace ffmpeg{
+    typedef std::function<void(AVFrame *)> frame_deleter_t;
+    typedef std::unique_ptr<AVFrame, frame_deleter_t> frame_ptr;
 }
-
-typedef std::function<void(AVFrame *p)> frame_deleter_t;
-typedef std::shared_ptr<AVFrame> frame_ptr;
-

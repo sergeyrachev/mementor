@@ -10,7 +10,7 @@
 #include <map>
 #include <list>
 
-typedef std::function<void(frame_ptr)> consumer;
+typedef std::function<void(ffmpeg::frame_ptr)> consumer;
 
 class source_t {
 public:
@@ -23,7 +23,7 @@ public:
 
 private:
     void setup(ffmpeg::demuxer& dmx, const consumer &video, const consumer &audio);
-private:
+
     std::map<int32_t, std::shared_ptr<ffmpeg::decoder>> decoders;
     std::map<int32_t, consumer> consumers;
 };

@@ -46,7 +46,7 @@ void source_t::run(threads::interruption_t& interruption) {
 
         dec->put(au->packet.get());
         while(auto frame = dec->get()){
-            consumers[idx](frame);
+            consumers[idx](std::move(frame));
         }
         au = dmx->get();
     }
@@ -54,7 +54,7 @@ void source_t::run(threads::interruption_t& interruption) {
     for (auto &&dec : decoders) {
         dec.second->put(nullptr);
         while(auto frame = dec.second->get()){
-            consumers[dec.first](frame);
+            consumers[dec.first](std::move(frame));
         }
     }
 }
