@@ -10,11 +10,11 @@ include(cmake/version.cmake)
 project(mementor VERSION ${version})
 message(STATUS "Build ${PROJECT_NAME}-${version_revision} at ${birthday} on ${CMAKE_SYSTEM_NAME}")
 
-find_package(FFMPEG MODULE)
-find_package(Boost 1.70 MODULE COMPONENTS program_options log log_setup)
+find_package(FFMPEG COMPONENTS avcodec avformat swscale swresample)
+find_package(Boost 1.70 MODULE REQUIRED COMPONENTS program_options log log_setup)
 find_package(CURL)
 find_package(spdlog)
-find_package(GTest 1.8 CONFIG REQUIRED COMPONENTS gtest gmock)
+find_package(GTest 1.8 CONFIG REQUIRED COMPONENTS gtest gmock gmock_main )
 include(GoogleTest)
 
 configure_file(src/version.cpp.in version.cpp)
@@ -89,6 +89,7 @@ if(Boost_FOUND AND FFMPEG_FOUND)
         test/sb_splitter.cpp
         src/demuxer.cpp
         src/source.cpp
+        src/extraction.cpp
         src/decoder.cpp
         src/interruption.cpp
         src/options.cpp
@@ -98,5 +99,5 @@ if(Boost_FOUND AND FFMPEG_FOUND)
         ${CMAKE_CURRENT_BINARY_DIR}/birthday.cpp
         )
     target_include_directories(sb_splitter PRIVATE src/)
-    target_link_libraries(sb_splitter PRIVATE spdlog::spdlog Boost::program_options Boost::dynamic_linking Boost::log FFMPEG::avutil FFMPEG::avformat FFMPEG::avcodec)
+    target_link_libraries(sb_splitter PRIVATE spdlog::spdlog Boost::program_options Boost::dynamic_linking  Boost::headers FFMPEG::avutil FFMPEG::avformat FFMPEG::avcodec FFMPEG::swscale FFMPEG::swresample)
 endif()

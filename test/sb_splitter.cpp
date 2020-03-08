@@ -1,4 +1,4 @@
-#include "source.h"
+#include "extraction.h"
 #include "version.h"
 #include "birthday.h"
 #include "options.h"
@@ -32,18 +32,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    auto src = std::unique_ptr<source_t> {new source_t(
-        media_filename,
-        [](ffmpeg::frame_ptr au) {
-            SPDLOG_INFO("Video: {}" , au->pts);
+    extraction_t splitter(media_filename, 720, 44100,
+        [](ffmpeg::frame_ptr au, const std::chrono::microseconds &) {
+            SPDLOG_INFO("Video: {}", au->pts);
         },
-        [](ffmpeg::frame_ptr au) {
+        [](ffmpeg::frame_ptr au, const std::chrono::microseconds &) {
             SPDLOG_INFO("Audio: {}", au->pts);
-        })};
+        });
 
     threads::interruption_t interruption;
     posix::sighandler_t<SIGINT>::assign([&interruption](int signal) { interruption.interrupt(); });
     posix::sighandler_t<SIGTERM>::assign([&interruption](int signal) { interruption.interrupt(); });
 
-    src->run(interruption);
+    splitter.src->run(interruption);
+
+
 }

@@ -32,9 +32,9 @@ public:
         swr_init(sc.get());
     }
 
-    std::pair<frame_ptr, std::chrono::microseconds> resample(frame_ptr input_frame) {
+    std::pair<ffmpeg::frame_ptr, std::chrono::microseconds> resample(ffmpeg::frame_ptr input_frame) {
 
-        frame_ptr resampled_frame{av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }};
+        ffmpeg::frame_ptr resampled_frame{av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }};
         av_frame_copy_props(resampled_frame.get(), input_frame.get());
 
         resampled_frame->sample_rate = sr;
@@ -46,7 +46,7 @@ public:
 
         int ret = swr_convert_frame(sc.get(), resampled_frame.get(), input_frame.get());
 
-        return {resampled_frame, next_pts};
+        return {std::move(resampled_frame), next_pts};
     }
 
 private:
@@ -67,9 +67,9 @@ public:
                             SWS_BICUBIC, NULL, NULL, NULL), sws_freeContext} {
     }
 
-    std::pair<frame_ptr, std::chrono::microseconds> resample(frame_ptr frame) {
+    std::pair<ffmpeg::frame_ptr, std::chrono::microseconds> resample(ffmpeg::frame_ptr frame) {
 
-        frame_ptr out({av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }});
+        ffmpeg::frame_ptr out({av_frame_alloc(), [](AVFrame *p) { av_frame_free(&p); }});
 
         av_frame_copy_props(out.get(), frame.get());
         out->width = w;
@@ -80,7 +80,7 @@ public:
 
         int height = sws_scale(sc.get(), (const uint8_t *const *) frame->data, frame->linesize, 0, frame->height, out->data, out->linesize);
 
-        return {out, std::chrono::microseconds{out->pts}};
+        return {std::move(out), std::chrono::microseconds{out->pts}};
     }
 
 private:
