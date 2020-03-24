@@ -6,6 +6,8 @@
 #include <algorithm>
 
 ffmpeg::demuxer::demuxer(const std::string &filename) {
+    av_register_all();
+
     AVFormatContext *tmp_ctx(nullptr);
     int err = avformat_open_input(&tmp_ctx, filename.c_str(), NULL, NULL);
     assert(err == 0);
