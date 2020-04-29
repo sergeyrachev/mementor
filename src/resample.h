@@ -1,6 +1,7 @@
 #include "frame_ptr.h"
 
 #include <chrono>
+#include <string>
 
 extern "C"
 {
