@@ -74,7 +74,7 @@ if(Boost_FOUND)
     gtest_discover_tests(ut_options)
 endif()
 
-if(NOT ${CMAKE_HOST_WIN32} AND Boost_FOUND AND spdlog_FOUND)
+if(NOT CMAKE_HOST_WIN32 AND Boost_FOUND AND spdlog_FOUND)
     add_library(external_tool OBJECT src/external_tool.cpp)
     target_link_libraries(external_tool PUBLIC Boost::filesystem spdlog::spdlog)
     add_executable(ut_external_tool
