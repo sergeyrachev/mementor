@@ -10,7 +10,7 @@ configure_version(mementor)
 configure_birthday(mementor)
 
 include(cmake/export.cmake)
-configure_export(MEMENTOR)
+configure_export(MEMENTOR mementor)
 
 project(mementor VERSION ${version})
 message(STATUS "Build ${PROJECT_NAME}-${version_revision} at ${birthday} on ${CMAKE_SYSTEM_NAME}")
