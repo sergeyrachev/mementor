@@ -97,8 +97,8 @@ if(Boost_FOUND AND FFMPEG_FOUND)
         src/options.cpp
         src/access_unit_adapter.cpp
         src/track_adapter.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/version.cpp
-        ${CMAKE_CURRENT_BINARY_DIR}/birthday.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/generated/version.cpp
+        ${CMAKE_CURRENT_BINARY_DIR}/generated/birthday.cpp
         )
     target_include_directories(sb_splitter PRIVATE src/ ${CMAKE_CURRENT_BINARY_DIR}/generated)
     target_link_libraries(sb_splitter PRIVATE spdlog::spdlog Boost::program_options Boost::dynamic_linking  Boost::headers FFMPEG::avutil FFMPEG::avformat FFMPEG::avcodec FFMPEG::swscale FFMPEG::swresample)
