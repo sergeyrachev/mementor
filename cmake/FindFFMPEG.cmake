@@ -84,6 +84,7 @@ function(_ffmpeg_find component headername)
         /usr/freeware/include
         PATH_SUFFIXES
         ffmpeg
+        ffmpeg/include
         DOC "FFMPEG's ${component} include directory")
     mark_as_advanced("FFMPEG_${component}_INCLUDE_DIR")
 
@@ -110,6 +111,9 @@ function(_ffmpeg_find component headername)
         /opt/lib
         /usr/freeware/lib64
         "${FFMPEG_ROOT}/bin"
+        PATH_SUFFIXES
+        ffmpeg
+        ffmpeg/lib
         DOC "FFMPEG's ${component} library")
     mark_as_advanced("FFMPEG_${component}_LIBRARY")
 
