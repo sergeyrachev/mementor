@@ -89,10 +89,10 @@ function(_ffmpeg_find component headername)
     mark_as_advanced("FFMPEG_${component}_INCLUDE_DIR")
 
     # On Windows, static FFMPEG is sometimes built as `lib<name>.a`.
-    if (WIN32)
+    if(WIN32)
         list(APPEND CMAKE_FIND_LIBRARY_SUFFIXES ".a" ".lib")
         list(APPEND CMAKE_FIND_LIBRARY_PREFIXES "" "lib")
-    endif ()
+    endif()
 
     find_library("FFMPEG_${component}_LIBRARY"
         NAMES
