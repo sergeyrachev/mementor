@@ -1,6 +1,5 @@
 #include "extraction.h"
-#include "version.h"
-#include "birthday.h"
+#include "mementor/version.h"
 #include "options.h"
 #include "sighandler.h"
 
