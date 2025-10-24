@@ -103,6 +103,7 @@ namespace @NAMESPACE_LOWER@ {
     target_sources(${NAMESPACE_LOWER}-version-header
         PRIVATE
             ${CMAKE_CURRENT_BINARY_DIR}/gen/src/${NAMESPACE_LOWER}/version.cpp
-        PUBLIC FILE_SET headers TYPE HEADERS BASE_DIRS  ${CMAKE_CURRENT_BINARY_DIR}/gen/src/ FILES ${CMAKE_CURRENT_BINARY_DIR}/gen/src/${NAMESPACE_LOWER}/version.h
+            ${CMAKE_CURRENT_BINARY_DIR}/gen/src/${NAMESPACE_LOWER}/version.h
     )
+    target_include_directories(${NAMESPACE_LOWER}-version-header PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/gen/src/>)
 endfunction()
