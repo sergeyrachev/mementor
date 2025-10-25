@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "curl.h"
+#include "mementor/transport_error.h"
+#include "mementor/curl.h"
 
 class uncovered_curl_t : public http::curl_t{
 public:

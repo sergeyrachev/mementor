@@ -1,7 +1,7 @@
 #pragma once
 
-#include "source.h"
-#include "resample.h"
+#include "mementor/resample.h"
+#include "mementor/source.h"
 
 #include <chrono>
 
@@ -21,5 +21,3 @@ private:
 };
 
 std::chrono::microseconds video_frame_duration(const std::string &media_filename);
-
-

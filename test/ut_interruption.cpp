@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "interruption.h"
+#include "mementor/interruption.h"
 
 #include <chrono>
 #include <future>

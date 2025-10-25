@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "hash_fnv1a.h"
+#include "mementor/hash_fnv1a.h"
 
 TEST(hash, compile_time){
     using algorithm::operator"" _H;

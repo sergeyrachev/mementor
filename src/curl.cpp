@@ -1,6 +1,6 @@
-#include "curl.h"
+#include "mementor/curl.h"
 
-#include "transport_error.h"
+#include "mementor/transport_error.h"
 
 #include <boost/algorithm/string.hpp>
 

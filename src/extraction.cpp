@@ -1,6 +1,6 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-#include "extraction.h"
+#include "mementor/extraction.h"
 
 extraction_t::extraction_t(const std::string &media_filename, size_t target_video_height, size_t target_audio_samplerate, on_resample_callback_t on_video, on_resample_callback_t on_audio) {
     src = std::unique_ptr<source_t>{new source_t(

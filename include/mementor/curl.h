@@ -1,14 +1,11 @@
 #pragma once
 
-#include "http_error_code.h"
-#include "response.h"
-#include "transport_error.h"
+#include "mementor/response.h"
 
-#include <cstdint>
 #include <map>
-#include <string>
 #include <memory>
 #include <mutex>
+#include <string>
 
 #include <curl/curl.h>
 

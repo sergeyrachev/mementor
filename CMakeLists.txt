@@ -17,8 +17,8 @@ include(CMakePackageConfigHelpers)
 include(GenerateSymbolExportHeader)
 generate_symbol_export_header(NAMESPACE mementor)
 
-find_package(FFMPEG COMPONENTS avcodec avformat swscale swresample)
-find_package(Boost 1.70 MODULE REQUIRED COMPONENTS program_options log log_setup)
+find_package(FFMPEG 4.3.1...<5.0.0 COMPONENTS avcodec avformat swscale swresample)
+find_package(Boost 1.81 MODULE REQUIRED COMPONENTS  headers date_time program_options filesystem log log_setup)
 find_package(CURL)
 find_package(spdlog)
 find_package(GTest 1.8 CONFIG REQUIRED COMPONENTS gtest gmock gmock_main )
@@ -38,24 +38,36 @@ target_sources(singleton
     PRIVATE
         src/singleton.cpp
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/singleton.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/singleton.h>
+        FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/singleton.h
+)
+target_include_directories(singleton
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 install(
-    TARGETS
-    singleton
+    TARGETS singleton
     EXPORT mementor-targets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(FILES src/singleton.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 
 add_library(sighandler INTERFACE)
 target_sources(singleton
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/sighandler.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/sighandler.h>
+        FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/sighandler.h
+)
+target_include_directories(sighandler
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 install(
     TARGETS
@@ -65,15 +77,22 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(FILES src/sighandler.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 
 add_library(hash_fnv1a OBJECT)
 target_sources(hash_fnv1a
     PRIVATE
         src/hash_fnv1a.cpp
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/hash_fnv1a.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/hash_fnv1a.h>
+        FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/hash_fnv1a.h
+)
+target_include_directories(hash_fnv1a
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 install(
     TARGETS
@@ -83,15 +102,15 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(FILES src/hash_fnv1a.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
+
 
 add_executable(ut_hash_fnv1a
     test/ut_hash_fnv1a.cpp
-    src/hash_fnv1a.cpp
 )
-target_link_libraries(ut_hash_fnv1a PRIVATE GTest::gtest GTest::gmock_main)
-target_include_directories(ut_hash_fnv1a PRIVATE src/)
+target_link_libraries(ut_hash_fnv1a PRIVATE GTest::gtest GTest::gmock_main hash_fnv1a)
 gtest_discover_tests(ut_hash_fnv1a)
 
 add_library(interruption OBJECT)
@@ -99,7 +118,13 @@ target_sources(interruption
     PRIVATE
         src/interruption.cpp
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/interruption.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/interruption.h>
+        FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+            FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/interruption.h
+)
+target_include_directories(interruption
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 install(
     TARGETS
@@ -109,24 +134,29 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(FILES src/interruption.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 
 add_executable(ut_interruption
     test/ut_interruption.cpp
-    src/interruption.cpp
 )
-target_link_libraries(ut_interruption PRIVATE GTest::gtest GTest::gmock_main)
-target_include_directories(ut_interruption PRIVATE src/)
+target_link_libraries(ut_interruption PRIVATE GTest::gtest GTest::gmock_main interruption)
 gtest_discover_tests(ut_interruption)
 
 if(UUID_FOUND)
     add_library(uuid INTERFACE)
-    target_sources(interruption
+    target_sources(uuid
         PRIVATE
             src/uuid.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/uuid.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/uuid.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+                FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/uuid.h>
+    )
+    target_include_directories(uuid
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     install(
         TARGETS
@@ -136,18 +166,28 @@ if(UUID_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-    install(FILES src/uuid.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 endif()
 
-
 if(CURL_FOUND)
-    add_library(curl OBJECT )
+    add_library(curl OBJECT)
     target_sources(curl
         PRIVATE
             src/curl.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/curl.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/curl.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+                FILES
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/curl.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/http_error_code.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/response.h
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/transport_error.h
+    )
+    target_include_directories(curl
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     target_link_libraries(curl PUBLIC CURL::libcurl)
     install(
@@ -158,32 +198,33 @@ if(CURL_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-    install(FILES
-        src/curl.h
-        src/http_error_code.h
-        src/response.h
-        src/transport_error.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 
     add_executable(ut_curl
         test/ut_curl.cpp
-        src/curl.cpp
         )
-    target_link_libraries(ut_curl PRIVATE GTest::gmock GTest::gmock_main CURL::libcurl)
-    target_include_directories(ut_curl PRIVATE src/)
+    target_link_libraries(ut_curl PRIVATE GTest::gmock GTest::gmock_main curl)
     gtest_discover_tests(ut_curl)
 endif()
 
 if(Boost_FOUND)
-    add_library(ntp OBJECT src/ntp.cpp)
+    add_library(ntp OBJECT)
     target_sources(ntp
         PRIVATE
             src/ntp.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/ntp.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/ntp.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+                FILES
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/ntp.h
     )
     target_link_libraries(ntp PUBLIC Boost::date_time)
+    target_include_directories(ntp
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    )
     install(
         TARGETS
             ntp
@@ -192,15 +233,14 @@ if(Boost_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-    install(FILES src/ntp.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
-
+    
     add_executable(ut_ntp
         test/ut_ntp.cpp
-        src/ntp.cpp
     )
-    target_link_libraries(ut_ntp PRIVATE GTest::gtest GTest::gmock_main Boost::date_time)
-    target_include_directories(ut_ntp PRIVATE src/)
+    target_link_libraries(ut_ntp PRIVATE GTest::gtest GTest::gmock_main Boost::date_time ntp)
     gtest_discover_tests(ut_ntp)
 
     add_library(options OBJECT)
@@ -208,7 +248,14 @@ if(Boost_FOUND)
         PRIVATE
             src/options.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/options.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/options.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+                FILES
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/options.h
+    )
+    target_include_directories(options
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     target_link_libraries(options PUBLIC Boost::program_options )
     install(
@@ -219,15 +266,14 @@ if(Boost_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-    install(FILES src/options.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
 
     add_executable(ut_options
         test/ut_options.cpp
-        src/options.cpp
     )
-    target_link_libraries(ut_options PRIVATE GTest::gtest GTest::gmock_main Boost::program_options)
-    target_include_directories(ut_options PRIVATE src/)
+    target_link_libraries(ut_options PRIVATE GTest::gtest GTest::gmock_main options)
     gtest_discover_tests(ut_options)
 endif()
 
@@ -237,7 +283,14 @@ if(NOT ${CMAKE_HOST_WIN32} AND Boost_FOUND AND spdlog_FOUND)
         PRIVATE
             src/external_tool.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/external_tool.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/external_tool.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+                FILES
+                    ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/external_tool.h
+    )
+    target_include_directories(external_tool
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     target_link_libraries(external_tool PUBLIC Boost::filesystem spdlog::spdlog)
     install(
@@ -248,15 +301,15 @@ if(NOT ${CMAKE_HOST_WIN32} AND Boost_FOUND AND spdlog_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-    install(FILES src/external_tool.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
     
     add_executable(ut_external_tool
         test/ut_external_tool.cpp
         src/external_tool.cpp
     )
-    target_link_libraries(ut_external_tool PRIVATE GTest::gtest GTest::gmock_main Boost::filesystem spdlog::spdlog)
-    target_include_directories(ut_external_tool PRIVATE src/)
+    target_link_libraries(ut_external_tool PRIVATE GTest::gtest GTest::gmock_main external_tool)
     gtest_discover_tests(ut_external_tool)
 endif()
 
@@ -268,21 +321,36 @@ if(Boost_FOUND AND FFMPEG_FOUND)
             src/source.cpp
             src/extraction.cpp
             src/decoder.cpp
-            src/interruption.cpp
-            src/options.cpp
             src/access_unit_adapter.cpp
             src/track_adapter.cpp
         PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/extraction.h> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/mementor/extraction.h>
+            FILE_SET headers TYPE HEADERS BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/extraction.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/demuxer.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/resample.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/frame_ptr.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/packet_ptr.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/source.h         
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/decoder.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/access_unit_adapter.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/include/mementor/track_adapter.h
+    )
+    target_include_directories(splitter
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     target_link_libraries(splitter
         PUBLIC
-        FFMPEG::avutil
-        FFMPEG::avformat
-        FFMPEG::avcodec
-        FFMPEG::swscale
-        FFMPEG::swresample
-        spdlog::spdlog
+            FFMPEG::avutil
+            FFMPEG::avformat
+            FFMPEG::avcodec
+            FFMPEG::swscale
+            FFMPEG::swresample
+            spdlog::spdlog
+            options
+            interruption
     )
     install(
         TARGETS
@@ -292,33 +360,48 @@ if(Boost_FOUND AND FFMPEG_FOUND)
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        OBJECTS DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        FILE_SET headers DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )
-    install(FILES src/extraction.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mementor)
-
+    
     add_executable(sb_splitter)
     target_sources(sb_splitter
         PRIVATE
             test/sb_splitter.cpp
     )
-    target_include_directories(sb_splitter PRIVATE src)
     target_link_libraries(sb_splitter
         PRIVATE
         Boost::program_options
         Boost::dynamic_linking
         Boost::headers
         splitter
+        options
+        interruption
         mementor-version-header
     )
 endif()
-
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/mementor-config.cmake.in
 [=[
 cmake_policy(VERSION 3.18)
 @PACKAGE_INIT@
-include ( "${CMAKE_CURRENT_LIST_DIR}/mementor-targets.cmake" )
 
-set(MEMENTOR_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE INTERNAL "Path to custom CMake modules to use by parent projects")
+include(CMakeFindDependencyMacro)
+find_dependency(mementor-cmake-module REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${MEMENTOR_MODULE_PATH})
+
+find_dependency(FFMPEG 4.3.1...<5.0.0 COMPONENTS avcodec avformat swscale swresample)
+find_dependency(Boost 1.81 COMPONENTS date_time program_options filesystem log log_setup)
+find_dependency(CURL)
+find_dependency(spdlog)
+find_dependency(GTest 1.8 CONFIG COMPONENTS gtest gmock gmock_main )
+
+find_dependency(PkgConfig QUIET)
+if (PkgConfig_FOUND)
+    pkg_check_modules(UUID libuuid)
+endif ()
+
+include ( "${CMAKE_CURRENT_LIST_DIR}/mementor-targets.cmake" )
 ]=]
 )
 write_basic_package_version_file(
@@ -329,8 +412,9 @@ write_basic_package_version_file(
 configure_package_config_file(
     ${CMAKE_CURRENT_BINARY_DIR}/mementor-config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/mementor-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}
+    INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mementor/cmake
 )
+
 
 install(EXPORT mementor-targets
     FILE mementor-targets.cmake
@@ -344,7 +428,28 @@ install(FILES
     DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor/cmake
 )
 
+
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/mementor-cmake-module-config.cmake.in
+[=[
+cmake_policy(VERSION 3.18)
+@PACKAGE_INIT@
+
+set(MEMENTOR_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Path to custom CMake modules to use by parent projects")
+list(APPEND CMAKE_MODULE_PATH ${MEMENTOR_MODULE_PATH})
+]=]
+)
+
+configure_package_config_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/mementor-cmake-module-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/mementor-cmake-module-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mementor-cmake-module/cmake
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/mementor-cmake-module-config.cmake
+    DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor-cmake-module/cmake
+)
 install(
     DIRECTORY cmake/
-    DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor/cmake
+    DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor-cmake-module/cmake
 )

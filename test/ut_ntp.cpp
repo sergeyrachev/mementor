@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "ntp.h"
+#include "mementor/ntp.h"
 
 using namespace datetime;
 TEST(ntp, build){

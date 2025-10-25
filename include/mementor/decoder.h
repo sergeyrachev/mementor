@@ -1,6 +1,6 @@
 #pragma once
 
-#include "frame_ptr.h"
+#include "mementor/frame_ptr.h"
 
 #include <functional>
 #include <memory>
@@ -24,4 +24,3 @@ namespace ffmpeg {
         dec_ctx_ptr dec_ctx;
     };
 }
-
