@@ -83,7 +83,7 @@ artifact:
 
 	mkdir -p $(build_dir)/mementor
 	cmake -Wno-dev --trace-expand --trace-redirect="$(build_dir_winpath)/mementor/cmake.log" -DCMAKE_INSTALL_PREFIX="$(install_dir_winpath)" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(prefix_dir_winpath)" -B "$(build_dir_winpath)/mementor" -S "$(project_dir_winpath)"
-	cmake --build "$(build_dir_winpath)/mementor" --config Release --target install
+	cmake --build "$(build_dir_winpath)/mementor" --target install
 	ctest --test-dir "$(build_dir_winpath)/mementor"
 EOD
 endef
