@@ -1,6 +1,6 @@
 cmake_policy(VERSION 3.21)
 
-function(generate_semantic_version_header)
+function(set_semantic_version_variables)
     set(options "")
     set(single_value_arg NAMESPACE )
     set(multi_value_arg )
@@ -8,14 +8,6 @@ function(generate_semantic_version_header)
 
     string(TOUPPER "${arg_NAMESPACE}" NAMESPACE_UPPER)
     string(TOLOWER "${NAMESPACE_UPPER}" NAMESPACE_LOWER)
-
-    if (TARGET ${NAMESPACE_LOWER}-version-header)
-        return()
-    endif ()
-
-    # versioncore-pre.release+build.info
-    # major.minor.patch.tweak-phase+revision.build.date.branch =>
-    # 1.2.3.897-{dev,debug,alpha,beta,release}+abcdef0.b42.20220120T120455Z{.mnemonic}{.dirty}{.local}
 
     set(SEMVER_MAJOR_DEFAULT 0)
     set(SEMVER_MINOR_DEFAULT 0)
@@ -26,7 +18,7 @@ function(generate_semantic_version_header)
     set(SEMVER_PHASE_DEFAULT "dev")
     set(SEMVER_CI_DEFAULT "local")
     string(TIMESTAMP SEMVER_TIMESTAMP_DEFAULT "%Y%m%dT%H%M%SZ" UTC)
-    string(TIMESTAMP SEMVER_TIMESTAMP_RFC  UTC)
+    string(TIMESTAMP SEMVER_TIMESTAMP_RFC UTC)
 
     if (NOT DEFINED $ENV{SEMVER_MAJOR})
         set(ENV{SEMVER_MAJOR} ${SEMVER_MAJOR_DEFAULT})
@@ -75,7 +67,31 @@ function(generate_semantic_version_header)
 
     set(${NAMESPACE_UPPER}_VERSION_LONG ${SEMVER_VERSION} CACHE INTERNAL "Full Version String")
     set(${NAMESPACE_UPPER}_VERSION ${SEMVER_VERSIONCORE} CACHE INTERNAL "Version String")
-    set(${NAMESPACE_UPPER}_TIMESTAMP ${SEMVER_TIMESTAMP_RFC} CACHE INTERNAL "Birthday")
+    set(${NAMESPACE_UPPER}_TIMESTAMP ${SEMVER_TIMESTAMP_RFC} CACHE INTERNAL "Version Timestamp RFC")
+
+    set(${NAMESPACE_UPPER}_SEMVER_MAJOR $ENV{SEMVER_MAJOR} CACHE INTERNAL "Version Major")
+    set(${NAMESPACE_UPPER}_SEMVER_MINOR $ENV{SEMVER_MINOR} CACHE INTERNAL "Version Minor")
+    set(${NAMESPACE_UPPER}_SEMVER_PATCH $ENV{SEMVER_PATCH} CACHE INTERNAL "Version Patch")
+    set(${NAMESPACE_UPPER}_SEMVER_TWEAK $ENV{SEMVER_TWEAK} CACHE INTERNAL "Version Tweak")
+    set(${NAMESPACE_UPPER}_SEMVER_BUILD $ENV{SEMVER_BUILD} CACHE INTERNAL "Version Build")
+    set(${NAMESPACE_UPPER}_SEMVER_REVISION $ENV{SEMVER_REVISION} CACHE INTERNAL "Version Revision")
+    set(${NAMESPACE_UPPER}_SEMVER_PHASE $ENV{SEMVER_PHASE} CACHE INTERNAL "Version Phase")
+    set(${NAMESPACE_UPPER}_SEMVER_CI $ENV{SEMVER_CI} CACHE INTERNAL "Version CI")
+    set(${NAMESPACE_UPPER}_SEMVER_TIMESTAMP $ENV{SEMVER_TIMESTAMP} CACHE INTERNAL "Version Timestamp Short")
+endfunction()
+
+function(generate_semantic_version_header)
+    set(options "")
+    set(single_value_arg NAMESPACE )
+    set(multi_value_arg )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${single_value_arg}" "${multi_value_arg}")
+
+    string(TOUPPER "${arg_NAMESPACE}" NAMESPACE_UPPER)
+    string(TOLOWER "${NAMESPACE_UPPER}" NAMESPACE_LOWER)
+
+    if (TARGET ${NAMESPACE_LOWER}-version-header)
+        return()
+    endif ()
 
     file(CONFIGURE @ONLY OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/gen/src/${NAMESPACE_LOWER}/version.h CONTENT
 [=[
