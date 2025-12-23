@@ -21,17 +21,30 @@ inline std::string averr(int ret){
 
 class audio_resample_t {
 public:
-    audio_resample_t(uint32_t channel_layout, AVSampleFormat format, uint32_t sample_rate, size_t sr)
-        : sr(sr)
-        , l(AV_CH_LAYOUT_MONO)
-        , f(AV_SAMPLE_FMT_DBL)
-        , sc{swr_alloc_set_opts(
-            nullptr,
-            l, f, sr,
-            channel_layout, format, sample_rate, 0, nullptr
-        ), [](SwrContext *p) { swr_free(&p); }}{
-        swr_init(sc.get());
+    audio_resample_t(const AVChannelLayout channel_layout, AVSampleFormat format, uint32_t sample_rate, size_t sr)
+        : sc{swr_alloc(), [](SwrContext *p) { swr_free(&p); }}
+        , sr(sr){
+        av_channel_layout_from_mask(&l, AV_CH_LAYOUT_MONO);
+        f = AV_SAMPLE_FMT_DBL;
+
+        auto ps = sc.get();
+        swr_alloc_set_opts2(
+            &ps,
+            &l,
+            f,
+            sr,
+            &channel_layout,
+            format,
+            sample_rate,
+            0,
+            nullptr
+        );
+        swr_init(ps);
     }
+
+    ~audio_resample_t() {
+        av_channel_layout_uninit(&l);
+    };
 
     std::pair<ffmpeg::frame_ptr, std::chrono::microseconds> resample(ffmpeg::frame_ptr input_frame) {
 
@@ -39,22 +52,22 @@ public:
         av_frame_copy_props(resampled_frame.get(), input_frame.get());
 
         resampled_frame->sample_rate = sr;
-        resampled_frame->channel_layout = l;
+        resampled_frame->ch_layout = l;
         resampled_frame->format = f;
 
         int64_t input_pts = input_frame->pts * (sr * input_frame->sample_rate) / 1000000;
         std::chrono::microseconds next_pts{  swr_next_pts(sc.get(), input_pts) * 1000000 / (sr * input_frame->sample_rate) };
 
-        int ret = swr_convert_frame(sc.get(), resampled_frame.get(), input_frame.get());
+        swr_convert_frame(sc.get(), resampled_frame.get(), input_frame.get());
 
         return {std::move(resampled_frame), next_pts};
     }
 
 private:
-    size_t sr;
-    uint32_t l;
-    AVSampleFormat f;
     std::unique_ptr<SwrContext, std::function<void(SwrContext *)>> sc;
+    size_t sr;
+    AVChannelLayout l;
+    AVSampleFormat f;
 };
 
 class video_resample_t {
@@ -90,5 +103,3 @@ private:
     AVPixelFormat f;
     std::unique_ptr<SwsContext, decltype(&sws_freeContext)> sc;
 };
-
-

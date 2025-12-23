@@ -6,8 +6,6 @@
 #include <algorithm>
 
 ffmpeg::demuxer::demuxer(const std::string &filename) {
-    av_register_all();
-
     AVFormatContext *tmp_ctx(nullptr);
     int err = avformat_open_input(&tmp_ctx, filename.c_str(), NULL, NULL);
     assert(err == 0);
@@ -38,7 +36,6 @@ std::vector<ffmpeg::track_adapter> ffmpeg::demuxer::tracks() const {
 std::unique_ptr<ffmpeg::access_unit_adapter> ffmpeg::demuxer::get() {
 
     packet_ptr packet(av_packet_alloc(), [](AVPacket *p) {av_packet_free(&p);});
-    av_init_packet(packet.get());
     bool eos_occured = av_read_frame(dmx_ctx.get(), packet.get()) < 0;
     if(!eos_occured) {
         auto &stream = dmx_ctx->streams[packet->stream_index];

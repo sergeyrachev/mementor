@@ -18,7 +18,7 @@ include(GenerateSymbolExportHeader)
 generate_symbol_export_header(NAMESPACE mementor)
 generate_semantic_version_header(NAMESPACE mementor)
 
-find_package(FFMPEG 4.3.2 EXACT REQUIRED COMPONENTS avcodec avformat swscale swresample)
+find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat swscale swresample)
 find_package(Boost REQUIRED COMPONENTS headers date_time program_options filesystem log log_setup)
 find_package(CURL REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
