@@ -189,7 +189,7 @@ if(Boost_FOUND)
     gtest_discover_tests(ut_options)
 endif()
 
-if(NOT ${CMAKE_HOST_WIN32} AND Boost_FOUND AND spdlog_FOUND)
+if(NOT CMAKE_HOST_WIN32 AND Boost_FOUND AND spdlog_FOUND)
     add_library(external_tool OBJECT)
     add_library(mementor::external_tool ALIAS external_tool)
     target_sources(external_tool
