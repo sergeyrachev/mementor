@@ -3,6 +3,8 @@
 
 #include "mementor/external_tool.h"
 
+#include <thread>
+
 using posix::external_tool_t;
 
 class uncovered_external_tool_t : public external_tool_t{
