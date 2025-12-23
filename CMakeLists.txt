@@ -288,8 +288,10 @@ configure_package_config_file(
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/mementor-cmake-module-config.cmake
     DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor-cmake-module/cmake
+    COMPONENT devel
 )
 install(
     DIRECTORY cmake/
     DESTINATION  ${CMAKE_INSTALL_DATAROOTDIR}/mementor-cmake-module/cmake
+    COMPONENT devel
 )
