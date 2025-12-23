@@ -39,17 +39,6 @@ clean:
 folders:
 	mkdir -p $(build_dir) $(dist_dir) $(download_dir) $(deps_dir)
 
-$(download_dir)/ffmpeg.marker:
-	wget -O $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip https://github.com/GyanD/codexffmpeg/releases/download/4.3.2-2021-02-27/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip
-	touch $(download_dir)/ffmpeg.marker
-
-$(build_dir)/ffmpeg.marker:
-	7z x $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip -y -o$(download_dir)
-	cp -r $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared/* $(deps_dir)/
-	touch $(build_dir)/ffmpeg.marker
-
-ffmpeg: $(download_dir)/ffmpeg.marker $(build_dir)/ffmpeg.marker;
-
 $(build_dir)/semver.marker:
 	git clone https://gitlab.com/sergeyrachev/semver.git $(download_dir)/semver
 	touch $(build_dir)/semver.marker
@@ -67,9 +56,10 @@ get-packages:
 	$$MINGW_PACKAGE_PREFIX-7zip \
 	$$MINGW_PACKAGE_PREFIX-wget \
 	$$MINGW_PACKAGE_PREFIX-ninja \
-	$$MINGW_PACKAGE_PREFIX-spdlog
+	$$MINGW_PACKAGE_PREFIX-spdlog \
+	$$MINGW_PACKAGE_PREFIX-ffmpeg
 
-battery: ffmpeg;
+battery: ;
 
 version: semver FORCE
 	(cd $(build_dir) && $(download_dir)/semver/semver.sh)
