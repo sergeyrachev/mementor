@@ -1,41 +1,43 @@
 mkfile_path := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 project_dir := $(abspath $(mkfile_path))
 
-stage_dir := $(project_dir)/stage
+scratch_dir := $(project_dir)/scratch
 
-build_dir := $(stage_dir)/build-dir
-install_dir := $(stage_dir)/install-dir
-download_dir := $(stage_dir)/download-dir
-prefix_dir := $(stage_dir)/prefix-dir
+build_dir := $(scratch_dir)/build
+dist_dir := $(scratch_dir)/dist
+download_dir := $(scratch_dir)/download
+deps_dir := $(scratch_dir)/deps
 
 define _windows_mingw_makefile
 cat <<'EOD'
 .ONESHELL:
+.SHELLFLAGS = -ec
 
 mkfile_path := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 project_dir := $(abspath $(mkfile_path)/..)
-stage_dir := $(project_dir)/stage
-build_dir := $(stage_dir)/build-dir
-install_dir := $(stage_dir)/install-dir
-download_dir := $(stage_dir)/download-dir
-prefix_dir := $(stage_dir)/prefix-dir
+
+scratch_dir := $(project_dir)/scratch
+build_dir := $(scratch_dir)/build
+dist_dir := $(scratch_dir)/dist
+download_dir := $(scratch_dir)/download
+deps_dir := $(scratch_dir)/deps
 
 project_dir_winpath := $(shell cygpath -w $(project_dir))
-stage_dir_winpath := $(shell cygpath -w $(stage_dir))
+scratch_dir_winpath := $(shell cygpath -w $(scratch_dir))
 build_dir_winpath := $(shell cygpath -w $(build_dir))
-install_dir_winpath := $(shell cygpath -w $(install_dir))
+dist_dir_winpath := $(shell cygpath -w $(dist_dir))
 download_dir_winpath := $(shell cygpath -w $(download_dir))
-prefix_dir_winpath := $(shell cygpath -w $(prefix_dir))
+deps_dir_winpath := $(shell cygpath -w $(deps_dir))
 
 mingw_prefix_winpath := $(shell cygpath -w $$MINGW_PREFIX)
 
 FORCE:
 
 clean:
-	-rm -rf $(build_dir) $(install_dir) $(download_dir) $(prefix_dir)
+	-rm -rf $(build_dir) $(dist_dir) $(download_dir) $(deps_dir)
 
 folders:
-	mkdir -p $(build_dir) $(install_dir) $(download_dir) $(prefix_dir)
+	mkdir -p $(build_dir) $(dist_dir) $(download_dir) $(deps_dir)
 
 $(download_dir)/ffmpeg.marker:
 	wget -O $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip https://github.com/GyanD/codexffmpeg/releases/download/4.3.2-2021-02-27/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip
@@ -43,7 +45,7 @@ $(download_dir)/ffmpeg.marker:
 
 $(build_dir)/ffmpeg.marker:
 	7z x $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared.zip -y -o$(download_dir)
-	cp -r $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared/* $(prefix_dir)/
+	cp -r $(download_dir)/ffmpeg-4.3.2-2021-02-27-full_build-shared/* $(deps_dir)/
 	touch $(build_dir)/ffmpeg.marker
 
 ffmpeg: $(download_dir)/ffmpeg.marker $(build_dir)/ffmpeg.marker;
@@ -86,7 +88,7 @@ artifact:
 	export SEMVER_DIRTY=$(shell cat $(build_dir)/SEMVER_DIRTY)
 
 	mkdir -p $(build_dir)/mementor
-	cmake -Wno-dev --trace-expand --trace-redirect="$(build_dir_winpath)/mementor/cmake.log" -DCMAKE_INSTALL_PREFIX="$(install_dir_winpath)" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(prefix_dir_winpath)" -DBoost_USE_STATIC_LIBS=OFF -B "$(build_dir_winpath)/mementor" -S "$(project_dir_winpath)"
+	cmake -Wno-dev --trace-expand --trace-redirect="$(build_dir_winpath)/mementor/cmake.log" -DCMAKE_INSTALL_PREFIX="$(dist_dir_winpath)" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(deps_dir_winpath)" -DBoost_USE_STATIC_LIBS=OFF -B "$(build_dir_winpath)/mementor" -S "$(project_dir_winpath)"
 	cmake --build "$(build_dir_winpath)/mementor" --target install
 	ctest --test-dir "$(build_dir_winpath)/mementor"
 EOD
@@ -94,14 +96,14 @@ endef
 export windows_mingw_makefile=$(value _windows_mingw_makefile)
 
 clean:
-	rm -rf $(build_dir) $(install_dir) $(download_dir) $(prefix_dir)
+	rm -rf $(build_dir) $(dist_dir) $(download_dir) $(deps_dir)
 
 folders:
-	mkdir -p $(build_dir) $(install_dir) $(download_dir) $(prefix_dir)
+	mkdir -p $(build_dir) $(dist_dir) $(download_dir) $(deps_dir)
 
 windows-mingw: folders
-	eval "$$windows_mingw_makefile" > $(stage_dir)/windows-mingw.Makefile
-	$(MAKE) -f $(stage_dir)/windows-mingw.Makefile battery version artifact
+	eval "$$windows_mingw_makefile" > $(scratch_dir)/windows-mingw.Makefile
+	$(MAKE) -f $(scratch_dir)/windows-mingw.Makefile battery version artifact
 
 ubuntu24: ;
 
