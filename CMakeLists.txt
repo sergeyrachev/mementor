@@ -208,7 +208,6 @@ if(NOT CMAKE_HOST_WIN32 AND Boost_FOUND AND spdlog_FOUND)
 
     add_executable(ut_external_tool
         test/ut_external_tool.cpp
-        src/external_tool.cpp
     )
     target_link_libraries(ut_external_tool PRIVATE GTest::gtest GTest::gmock_main external_tool)
     gtest_discover_tests(ut_external_tool)
