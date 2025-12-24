@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.28)
 
 set(MEMENTOR_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake" CACHE INTERNAL "Path to custom CMake modules to use by parent projects")
 list(APPEND CMAKE_MODULE_PATH ${MEMENTOR_MODULE_PATH})
@@ -19,7 +19,7 @@ generate_symbol_export_header(NAMESPACE mementor)
 generate_semantic_version_header(NAMESPACE mementor)
 
 find_package(FFMPEG REQUIRED COMPONENTS avcodec avformat swscale swresample)
-find_package(Boost REQUIRED COMPONENTS headers date_time program_options filesystem log log_setup)
+find_package(Boost REQUIRED CONFIG COMPONENTS headers date_time program_options filesystem log log_setup)
 find_package(CURL REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_package(GTest 1.8 CONFIG REQUIRED COMPONENTS gtest gmock gmock_main )
