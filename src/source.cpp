@@ -54,7 +54,6 @@ void source_t::run(threads::interruption_t& interruption) {
         auto idx = au->packet->stream_index;
 
         if (decoders.find(idx) == decoders.end()) {
-            spdlog::warn("No decoder for stream index {}, skip packet", idx);
             continue;
         }
 
