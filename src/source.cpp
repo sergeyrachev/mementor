@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <list>
 #include <map>
+#include <stdexcept>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -22,7 +23,10 @@ source_t::~source_t() = default;
 void source_t::setup(ffmpeg::demuxer& dmx, const consumer &video, const consumer &audio) {
     auto tracks = dmx.tracks();
     //assert(tracks.size() == 2 && "Single Audio / Video streams only");
-
+    if (tracks.size() > 2) {
+        throw std::runtime_error("The input file must contain exactly 2 tracks: Audio and Video");
+    }
+    
     for (auto &&track : tracks) {
 
         if(track.parameters.codec_type == AVMEDIA_TYPE_VIDEO){
