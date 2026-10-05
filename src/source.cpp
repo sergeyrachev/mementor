@@ -53,15 +53,12 @@ void source_t::run(threads::interruption_t& interruption) {
 
         auto idx = au->packet->stream_index;
 
-        if (decoders.find(idx) == decoders.end()) {
-            continue;
-        }
-
-        auto&& dec = decoders[idx];
-
-        dec->put(au->packet.get());
-        while(auto frame = dec->get()){
-            consumers[idx](std::move(frame));
+        if (decoders.find(idx) != decoders.end()) {
+            auto&& dec = decoders[idx];
+            dec->put(au->packet.get());
+            while(auto frame = dec->get()){
+                consumers[idx](std::move(frame));
+            }
         }
         au = dmx->get();
     }
