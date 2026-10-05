@@ -5,6 +5,7 @@
 #include <condition_variable>
 #include <list>
 #include <map>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 extern "C" {
@@ -23,21 +24,26 @@ source_t::~source_t() = default;
 void source_t::setup(ffmpeg::demuxer& dmx, const consumer &video, const consumer &audio) {
     auto tracks = dmx.tracks();
     //assert(tracks.size() == 2 && "Single Audio / Video streams only");
-    if (tracks.size() > 2) {
-        throw std::runtime_error("The input file must contain exactly 2 tracks: Audio and Video");
-    }
-    
+
+    bool has_video = false;
+    bool has_audio = false;
     for (auto &&track : tracks) {
 
         if(track.parameters.codec_type == AVMEDIA_TYPE_VIDEO){
             vdec = std::make_shared<ffmpeg::decoder>(track.parameters);
             decoders[track.index] = vdec;
             consumers[track.index] = video;
+            has_video = true;
         } else if(track.parameters.codec_type == AVMEDIA_TYPE_AUDIO){
             adec = std::make_shared<ffmpeg::decoder>(track.parameters);
             decoders[track.index] = adec;
             consumers[track.index] = audio;
+            has_audio = true;
         }
+    }
+
+    if (!has_video || !has_audio) {
+        throw std::runtime_error("The input file must contain Audio and Video tracks");
     }
 }
 
@@ -46,6 +52,12 @@ void source_t::run(threads::interruption_t& interruption) {
     while( !interruption.done() && au ){
 
         auto idx = au->packet->stream_index;
+
+        if (decoders.find(idx) == decoders.end()) {
+            spdlog::warn("No decoder for stream index {}, skip packet", idx);
+            continue;
+        }
+
         auto&& dec = decoders[idx];
 
         dec->put(au->packet.get());
